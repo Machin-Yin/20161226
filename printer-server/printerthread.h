@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
+#include <QMutex>
 
 
 class PrinterThread : public QThread
@@ -23,6 +24,7 @@ public:
 	void doPrint(QPrinter *printer, QString fileName2);
 	void terminatePrg();
 	void remTerm(QString fileName3);
+	//int cliPnum;
 signals:
 	void error(QTcpSocket::SocketError socketError);
 
@@ -38,6 +40,7 @@ private:
 	QByteArray inBlock;
 	quint16 blockSize;
 	QString message;
+	//QMutex mutex;
 
 };
 

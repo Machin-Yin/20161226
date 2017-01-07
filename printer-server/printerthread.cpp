@@ -27,34 +27,17 @@ void PrinterThread::run()
 		tcpSocket->close();
 		return;
 	}
+
 	while (tcpSocket->waitForReadyRead())
 	{
-		QString bl = recMessage();
-		QFile authfile("authcode.txt");
-		if (authfile.open(QIODevice::ReadOnly))
+		QString bl = recMessage();   
+		if (bl == "Request printer list!")
 		{
-			QString authcode = "";
-			authcode = QString(authfile.read(10));
-			authfile.close();
-			if (bl != authcode)
-			{
-				sendMessage("AUTH WRONG");
-				return;
-			}
-		}
-		sendMessage("OK");
-		while (tcpSocket->waitForReadyRead())
-		{
-			QString boo = recMessage();
-			qDebug() << "boo==" << boo << endl;
-			if (boo != "Request printer list!")
-			{
-				return;
-			}
+			qDebug() << "request printer list";
 			QPrinterInfo pInfo;
 			QStringList pname;
 			pname = pInfo.availablePrinterNames();
-			pname.prepend("PList");
+			//pname.prepend("PList");
 			qDebug() << "panme:" << pname;
 			foreach(auto a, pname)
 			{
@@ -63,11 +46,38 @@ void PrinterThread::run()
 			QString pstr = pname.join(",");
 			sendMessage(pstr);
 
-			while (tcpSocket->waitForReadyRead())
-			{
-				recFile();
-			}
 		}
+		else if (bl == "begin send file") {
+			qDebug() << "begin send file";
+			recFile();
+		}
+		//else if(bl == "DefaultPrinter"){
+		//	while (tcpSocket->waitForReadyRead())
+		//	{
+		//		QString index = recMessage();
+		//		cliPnum = index.toInt();
+		//		qDebug() << "cliPnum==" << cliPnum << endl;
+		//		break;
+		//	}
+
+		//}
+		else {
+			qDebug() << "authcode"<<bl;
+			QFile authfile("authcode.txt");
+			if (authfile.open(QIODevice::ReadOnly))
+			{
+				QString authcode = "";
+				authcode = QString(authfile.read(10));
+				authfile.close();
+				if (bl != authcode)
+				{
+					sendMessage("AUTH WRONG");
+					return;
+				}
+			}
+			sendMessage("OK");
+		}
+		//mutex.unlock();
 	}
 }
 
@@ -86,12 +96,12 @@ void PrinterThread::sendMessage(QString messtr)
 
 QString PrinterThread::recMessage()
 {
+	//mutex.lock();
 	qDebug() << __FUNCTION__ << endl;
 	QDataStream in(tcpSocket);
 	if (blockSize == 0)
 	{
-		qDebug() << "(blockSize == 0)" << endl;
-		qDebug() << "(tcpSocket->bytesAvailable())==" << tcpSocket->bytesAvailable() << endl;
+
 		if (tcpSocket->bytesAvailable() < (int)sizeof(quint16))
 		{
 			qDebug() << "return" << endl;
@@ -106,6 +116,7 @@ QString PrinterThread::recMessage()
 	in >> message;
 	qDebug() << "message ==" << message << endl;
 	blockSize = 0;
+	//mutex.unlock();
 	return message;
 }
 
@@ -113,7 +124,7 @@ QString PrinterThread::recMessage()
 void PrinterThread::recFile() 
 {
 	qDebug() << __FUNCTION__ << endl;
-	while (tcpSocket->waitForReadyRead())
+	while (tcpSocket->bytesAvailable() > 0)
 	{
 		QDataStream in(tcpSocket);
 		//in.setVersion(QDataStream::Qt_4_6);
@@ -123,7 +134,6 @@ void PrinterThread::recFile()
 
 			if ((tcpSocket->bytesAvailable() >= sizeof(qint64) * 2) && (fileNameSize == 0))
 			{ 
-				//in.setByteOrder(QDataStream::LittleEndian);
 				in >> totalBytes >> fileNameSize;
 				bytesReceived += sizeof(qint64) * 2;
 				qDebug() << "bytesReceived=" << bytesReceived << endl;
@@ -168,7 +178,6 @@ void PrinterThread::recFile()
 			fileNameSize = 0;
 			localFile->close();
 			delete localFile;
-
 			setDefPrinter(PRINTER_NUM, fileName);
 		}
 	}
