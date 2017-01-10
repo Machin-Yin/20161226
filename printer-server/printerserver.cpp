@@ -5,7 +5,7 @@
 PrinterServer::PrinterServer(QObject *parent)
 	:QTcpServer(parent)
 {
-	//dlg = (PrinterDialog *)parent;
+
 }
 
 void PrinterServer::incomingConnection(qintptr socketDescriptor)
@@ -16,6 +16,5 @@ void PrinterServer::incomingConnection(qintptr socketDescriptor)
 	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 	thread->start();
 	qDebug() << "Server connection socketDescriptor==" << socketDescriptor;
-	
 }
 

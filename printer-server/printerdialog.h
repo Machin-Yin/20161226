@@ -7,25 +7,25 @@
 
 
 namespace Ui {
-class PrinterDialog;
+	class PrinterDialog;
 }
 
 class PrinterDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit PrinterDialog(QWidget *parent = 0);
-    ~PrinterDialog();
+	explicit PrinterDialog(QWidget *parent = 0);
+	~PrinterDialog();
 
 private:
-    Ui::PrinterDialog *ui;
+	Ui::PrinterDialog *ui;
 	PrinterServer printerServer;
 	qint16 tcpPort;
 
-private slots:
-    void getIP();
-    void on_flushButton_clicked();
+	private slots:
+	void getIP();
+	void on_flushButton_clicked();
 };
 
 #endif // PRINTERDIALOG_H

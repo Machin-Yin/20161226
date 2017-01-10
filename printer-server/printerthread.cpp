@@ -2,7 +2,7 @@
 #include <QPrinterInfo>
 #include <Tlhelp32.h>
 
-#define PRINTER_NUM 0
+//#define PRINTER_NUM 0
 #define COPIES_NUM 1
 #define DMPAPER_SIZE DMPAPER_A4
 
@@ -14,6 +14,7 @@ PrinterThread::PrinterThread(int socketDescriptor, QObject *parent)
 	bytesReceived = 0;
 	fileNameSize = 0;
 	blockSize = 0;
+	cliPnum = 0;
 }
 
 
@@ -27,17 +28,15 @@ void PrinterThread::run()
 		tcpSocket->close();
 		return;
 	}
-
 	while (tcpSocket->waitForReadyRead())
 	{
-		QString bl = recMessage();   
+		QString bl = recMessage();
 		if (bl == "Request printer list!")
 		{
 			qDebug() << "request printer list";
 			QPrinterInfo pInfo;
 			QStringList pname;
 			pname = pInfo.availablePrinterNames();
-			//pname.prepend("PList");
 			qDebug() << "panme:" << pname;
 			foreach(auto a, pname)
 			{
@@ -49,20 +48,24 @@ void PrinterThread::run()
 		}
 		else if (bl == "begin send file") {
 			qDebug() << "begin send file";
-			recFile();
+			while (tcpSocket->waitForReadyRead())
+			{
+				if (recFile())
+					break;
+			}
 		}
-		//else if(bl == "DefaultPrinter"){
-		//	while (tcpSocket->waitForReadyRead())
-		//	{
-		//		QString index = recMessage();
-		//		cliPnum = index.toInt();
-		//		qDebug() << "cliPnum==" << cliPnum << endl;
-		//		break;
-		//	}
+		else if (bl == "DefaultPrinter") {
+			while (tcpSocket->waitForReadyRead())
+			{
+				QString index = recMessage();
+				cliPnum = index.toInt();
+				qDebug() << "cliPnum==" << cliPnum << endl;
+				break;
+			}
 
-		//}
+		}
 		else {
-			qDebug() << "authcode"<<bl;
+			qDebug() << "authcode" << bl;
 			QFile authfile("authcode.txt");
 			if (authfile.open(QIODevice::ReadOnly))
 			{
@@ -77,7 +80,6 @@ void PrinterThread::run()
 			}
 			sendMessage("OK");
 		}
-		//mutex.unlock();
 	}
 }
 
@@ -96,12 +98,11 @@ void PrinterThread::sendMessage(QString messtr)
 
 QString PrinterThread::recMessage()
 {
-	//mutex.lock();
 	qDebug() << __FUNCTION__ << endl;
 	QDataStream in(tcpSocket);
 	if (blockSize == 0)
 	{
-
+		qDebug() <<"blockSize == 0 tcpSocket->bytesAvailable()"<< tcpSocket->bytesAvailable() << endl;
 		if (tcpSocket->bytesAvailable() < (int)sizeof(quint16))
 		{
 			qDebug() << "return" << endl;
@@ -116,79 +117,75 @@ QString PrinterThread::recMessage()
 	in >> message;
 	qDebug() << "message ==" << message << endl;
 	blockSize = 0;
-	//mutex.unlock();
 	return message;
 }
 
 
-void PrinterThread::recFile() 
+bool PrinterThread::recFile() 
 {
 	qDebug() << __FUNCTION__ << endl;
+	QDataStream in(tcpSocket);
+	qDebug() << "tcpSocket->bytesAvailable()" << tcpSocket->bytesAvailable() << endl;
 	while (tcpSocket->bytesAvailable() > 0)
 	{
-		QDataStream in(tcpSocket);
+
 		//in.setVersion(QDataStream::Qt_4_6);
-
-		if (bytesReceived <= sizeof(qint64) * 2)
-		{ 
-
+		qDebug() << "rec begin" << endl;
+		qDebug() << "bytesReceived======" << bytesReceived << endl;
+		if (bytesReceived < sizeof(qint64) * 2)
+		{
 			if ((tcpSocket->bytesAvailable() >= sizeof(qint64) * 2) && (fileNameSize == 0))
-			{ 
+			{
 				in >> totalBytes >> fileNameSize;
 				bytesReceived += sizeof(qint64) * 2;
+				qDebug() << "totalBytes=" << totalBytes << endl;
+
 				qDebug() << "bytesReceived=" << bytesReceived << endl;
 			}
-
 			if ((tcpSocket->bytesAvailable() >= fileNameSize)
 				&& (fileNameSize != 0))
-			{  
+			{
+				qDebug() << "(tcpSocket->bytesAvailable() >= fileNameSize)" << endl;
 				in >> fileName;
+				qDebug() << "fileName=" << fileName << endl;
 				bytesReceived += fileNameSize;
-				qDebug() << "bytesReceived=" << bytesReceived << endl;
 				localFile = new QFile(fileName);
 				if (!localFile->open(QFile::ReadWrite))
 				{
 					qDebug() << "open file error!";
-					return;
+					return true;
 				}
 			}
 			else
 			{
-				return;
+				return true;
 			}
 		}
-
 		if (bytesReceived < totalBytes)
-		{  
+		{
 			bytesReceived += tcpSocket->bytesAvailable();
-			qDebug() << "bytesReceived==" << bytesReceived << endl;
-			qDebug() << "totalBytes==" << totalBytes << endl;
 			inBlock = tcpSocket->readAll();
 			localFile->write(inBlock);
 			inBlock.resize(0);
 		}
 
-		if (bytesReceived == totalBytes)
+		qDebug() << "bytesReceived" << bytesReceived << endl;
+		if (bytesReceived == (totalBytes + 16))
 
-		{ 
+		{
 			qDebug() << "bytesReceived == totalBytes:  Receive" << fileName << "success!" << endl;
 
 			bytesReceived = 0;
-			tcpSocket->close();
+			//tcpSocket->close();
 			fileNameSize = 0;
 			localFile->close();
 			delete localFile;
-			setDefPrinter(PRINTER_NUM, fileName);
+			setDefPrinter(cliPnum, fileName);
+			return true;
 		}
 	}
+	return false;
 }
-
-
-//void PrinterThread::displayError(QAbstractSocket::SocketError)
-//{
-//	qDebug() << tcpSocket->errorString();
-//	tcpSocket->close();
-//}
 
 
 void PrinterThread::setDefPrinter(int num,QString fileName1)
@@ -216,16 +213,11 @@ void PrinterThread::setDefPrinter(int num,QString fileName1)
 	DWORD length = 256;
 	GetDefaultPrinter(szBufferDefaultPrinterName, &length);
 	qDebug() << "szBufferDefaultPrinterName===" << szBufferDefaultPrinterName << endl;
-
-	//QString printerName = printer.printerName;
-	//BOOL setret = FALSE;
 	LPCWSTR printerName = (const wchar_t*)printer_name.utf16();
 	SetDefaultPrinter(printerName);
-	//SetPrinter((const wchar_t*)printer_name.utf16(),);
 
 	/****** Set printer property! ******/
 
-	//LONG lSize = 0;
 	LPDEVMODE lpDevMode = NULL;
 	HANDLE hPrinter;
 	DWORD dwNeeded, dwRet;
@@ -235,14 +227,12 @@ void PrinterThread::setDefPrinter(int num,QString fileName1)
 	DWORD lengthDefpr = 256;
 	GetDefaultPrinter(defPrinter, &lengthDefpr);
 	qDebug() << "defPrinter===" << defPrinter << endl;
-	//	LPDEVMODE defdevmode = getDefaultPdevmode(hPrinter);
 	qDebug() << "defPrinter===" << defPrinter << endl;
 	if (!OpenPrinter(defPrinter, &hPrinter, NULL))
 	{
 		qDebug() << "OpenPrinter==" << !OpenPrinter(defPrinter, &hPrinter, NULL) << endl;
 		return;
 	}
-
 	//get real size of DEVMODE
 	dwNeeded = DocumentProperties(NULL, hPrinter, defPrinter, NULL, NULL, 0);
 	lpDevMode = (LPDEVMODE)malloc(dwNeeded);  
@@ -259,26 +249,23 @@ void PrinterThread::setDefPrinter(int num,QString fileName1)
 		lpDevMode->dmCopies = COPIES_NUM;
 		lpDevMode->dmFields |= DM_COPIES;
 	}
-	if (lpDevMode->dmFields & DM_ORIENTATION)
-	{
-		/* If the printer supports paper orientation, set it.*/
-		lpDevMode->dmOrientation = DMORIENT_LANDSCAPE;  //landscape:ºá    portrait:×Ý
-		lpDevMode->dmOrientation |= DM_ORIENTATION;
-	}
-	if (lpDevMode->dmFields & DM_PAPERSIZE)
-	{
-		lpDevMode->dmPaperSize = DMPAPER_SIZE;
-		lpDevMode->dmOrientation |= DM_PAPERSIZE;
-	}
+	//if (lpDevMode->dmFields & DM_ORIENTATION)
+	//{
+	//	lpDevMode->dmOrientation = DMORIENT_LANDSCAPE;  //landscape:ºá    portrait:×Ý
+	//	lpDevMode->dmOrientation |= DM_ORIENTATION;
+	//}
+	//if (lpDevMode->dmFields & DM_PAPERSIZE)
+	//{
+	//	lpDevMode->dmPaperSize = DMPAPER_SIZE;
+	//	lpDevMode->dmOrientation |= DM_PAPERSIZE;
+	//}
 	dwRet = DocumentProperties(NULL, hPrinter, defPrinter, lpDevMode, lpDevMode, DM_IN_BUFFER | DM_OUT_BUFFER);
-	//ClosePrinter(hPrinter);
 	if (dwRet != IDOK)
 	{
 		free(lpDevMode);
 		return;
 	}
 
-	//HDC hdc = CreateDC( (LPCWSTR)(_T("winspool").AllocSysString(), printerName , NULL, lpDevMode);
 	DWORD dw;
 	PRINTER_INFO_2 *pi2;
 	GetPrinter(hPrinter, 2, NULL, 0, &dw);
@@ -317,7 +304,6 @@ void PrinterThread::doPrint(QPrinter *printer, QString fileName2)
 	qDebug() << "ret====" << ret << endl;
 
 	remTerm(fileName2);
-	qDebug() << "delete" << fileName2 << "success!" << endl;
 
 }
 
@@ -357,10 +343,10 @@ void PrinterThread::terminatePrg()
 				ID = processInfo->th32ProcessID;
 				HANDLE hProcess;
 				hProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, ID);
-				if(hProcess==NULL)
+				if (hProcess == NULL)
 				{
-				  printf("Unable to get handle of process: ");
-				  printf("Error is: %d",GetLastError());
+					printf("Unable to get handle of process: ");
+					printf("Error is: %d", GetLastError());
 				}
 				TerminateProcess(hProcess, 0);
 				CloseHandle(hProcess);
