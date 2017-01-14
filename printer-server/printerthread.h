@@ -16,12 +16,12 @@ class PrinterThread : public QThread
 	Q_OBJECT
 public:
 	PrinterThread(int socketDescriptor, QObject *parent = 0);
-	void run();
+	void run() ;
 	void sendMessage(QString messtr);
 	QString recMessage();
 	bool recFile();
 	void setDefPrinter(int num, QString fileName1);
-	void doPrint(QPrinter *printer, QString fileName2);
+    void doPrint(QString fileName2);
 	void terminatePrg();
 	void remTerm(QString fileName3);
 	int cliPnum;
@@ -40,6 +40,8 @@ private:
 	QByteArray inBlock;
 	quint16 blockSize;
 	QString message;
+	//QMutex mutex;
+
 };
 
 #endif // PRINTERTHREAD_H

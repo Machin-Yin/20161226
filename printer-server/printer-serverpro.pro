@@ -10,18 +10,17 @@ QT += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = printer-server
+TARGET = ECP
 TEMPLATE = app
-
+TRANSLATIONS = lang_zh.ts
+QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
 
 SOURCES += main.cpp\
         printerdialog.cpp \   
-    winserver.cpp \
     printerserver.cpp \
     printerthread.cpp
 
 HEADERS  += printerdialog.h \
-    winserver.h \
     printerserver.h \
     printerthread.h
 
@@ -29,4 +28,7 @@ FORMS    += printerdialog.ui
 
 
 win32: LIBS += -lwinspool
+
+RESOURCES += \
+    resource.qrc
 

@@ -3,6 +3,12 @@
 
 #include "printerserver.h"
 #include <QDialog>
+#include <QSystemTrayIcon>
+#include <QAction>
+#include <QMenu>
+#include <QSystemTrayIcon>
+#include <QMessageBox>
+#include <QCloseEvent>
 //#include <QPrinter>
 
 
@@ -17,14 +23,27 @@ class PrinterDialog : public QDialog
 public:
 	explicit PrinterDialog(QWidget *parent = 0);
 	~PrinterDialog();
+    void setAutoStart(bool is_auto_start);
 
 private:
 	Ui::PrinterDialog *ui;
 	PrinterServer printerServer;
 	qint16 tcpPort;
+    void getIP();
 
-	private slots:
-	void getIP();
+/*************** systray *************/
+    QAction *restoreAction;
+    QAction *quitAction;
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
+    void createTrayIcon();
+    void createActions();
+    void setVisible(bool visible);
+    void setIcon();
+    void closeEvent(QCloseEvent *event);
+
+private slots:
+    void regetIP();
 	void on_flushButton_clicked();
 };
 
