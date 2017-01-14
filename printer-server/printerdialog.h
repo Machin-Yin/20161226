@@ -45,6 +45,7 @@ private:
 private slots:
     void regetIP();
 	void on_flushButton_clicked();
+    void iconIsActived(QSystemTrayIcon::ActivationReason reason);
 };
 
 #endif // PRINTERDIALOG_H

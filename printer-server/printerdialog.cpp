@@ -45,6 +45,7 @@ PrinterDialog::PrinterDialog(QWidget *parent) :
     createTrayIcon();
     setVisible(true);
     trayIcon->show();
+    connect(trayIcon , SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconIsActived(QSystemTrayIcon::ActivationReason)));
 
     tcpPort = 6666;
     if (!printerServer.listen(QHostAddress::Any, tcpPort))
@@ -151,7 +152,7 @@ void PrinterDialog::on_flushButton_clicked()
 void PrinterDialog::setAutoStart(bool is_auto_start)
 {
     QString application_name = QApplication::applicationName();
-    QSettings *settings = new QSettings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    QSettings *settings = new QSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if(is_auto_start)
     {
         QString application_path = QApplication::applicationFilePath();
@@ -162,6 +163,42 @@ void PrinterDialog::setAutoStart(bool is_auto_start)
         settings->remove(application_name);
     }
     delete settings;
+}
+
+void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
+{
+    qDebug()<<__FUNCTION__<<endl;
+    switch(reason)
+    {
+    case QSystemTrayIcon::Trigger:
+    {
+        if(this->isMinimized())
+        {
+            showNormal();
+            break;
+        }
+        else if(this->isVisible())
+        {
+            showMinimized();
+            break;
+        }
+    }
+    case QSystemTrayIcon::MiddleClick:
+    {
+        if(this->isMinimized())
+        {
+            showNormal();
+            break;
+        }
+        else if(this->isVisible())
+        {
+            showMinimized();
+            break;
+        }
+    }
+    default:
+        break;
+    }
 }
 
 
