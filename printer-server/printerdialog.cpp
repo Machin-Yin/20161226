@@ -174,7 +174,7 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
     {
     case QSystemTrayIcon::Trigger:
     {
-        if(this->isMinimized())
+        if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
             break;
@@ -187,7 +187,7 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
     }
     case QSystemTrayIcon::MiddleClick:
     {
-        if(this->isMinimized())
+        if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
             break;

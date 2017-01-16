@@ -20,12 +20,14 @@ int main(int argc, char *argv[])
         translator->load(":/lang_zh.qm");
         a.installTranslator(translator);
         PrinterDialog w;
+         //w.setFixedSize(800,800);
         if ( argc>1 && (argv[1]==(char *)"//min" ))
         {
             w.hide();
         }
         else
         {
+
             w.showNormal();
         }
     //	w.show();
