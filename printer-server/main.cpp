@@ -1,22 +1,35 @@
 #include "printerdialog.h"
 #include <QApplication>
 #include <QTranslator>
+#include <QSharedMemory>
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-    QTranslator *translator = new QTranslator;
-    translator->load("lang_zh.qm");
-    a.installTranslator(translator);
-	PrinterDialog w;
-    if ( argc>1 && (argv[1]==(char *)"//min" ))
+
+    QSharedMemory shared_memory;
+    shared_memory.setKey("emindsoft.com.cn");
+    if(shared_memory.attach())
     {
-        w.hide();
+        QMessageBox::information(0,"Information","This program is running already.",QMessageBox::Yes);
+        return 0;
     }
-    else
+    if(shared_memory.create(1))
     {
-        w.showNormal();
+        QTranslator *translator = new QTranslator;
+        translator->load(":/lang_zh.qm");
+        a.installTranslator(translator);
+        PrinterDialog w;
+        if ( argc>1 && (argv[1]==(char *)"//min" ))
+        {
+            w.hide();
+        }
+        else
+        {
+            w.showNormal();
+        }
+    //	w.show();
+        return a.exec();
     }
-//	w.show();
-	return a.exec();
+    return -1;
 }

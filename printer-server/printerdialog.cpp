@@ -27,7 +27,7 @@ PrinterDialog::PrinterDialog(QWidget *parent) :
     flags |= Qt::WindowCloseButtonHint;
     setWindowFlags(flags);
 
-    QFile authfile("authcode.txt");
+    QFile authfile(":/authcode.txt");
     if (authfile.open(QIODevice::ReadOnly))
     {
         QString authcode = "";
@@ -123,8 +123,10 @@ void PrinterDialog::getIP()
             }
             printf("\tIP Address: \t%s\n",
                    pAdapter->IpAddressList.IpAddress.String);
-            ui->ipleEdit->append(pAdapter->IpAddressList.IpAddress.String);
-
+            if(pAdapter->IpAddressList.IpAddress.String != "0.0.0.0")
+            {
+                ui->ipleEdit->append(pAdapter->IpAddressList.IpAddress.String);
+            }
             pAdapter = pAdapter->Next;
             printf("\n");
         }

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>image/tray.png</file>
+        <file>authcode.txt</file>
+        <file>lang_zh.qm</file>
     </qresource>
 </RCC>
