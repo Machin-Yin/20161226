@@ -13,7 +13,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ECP
 TEMPLATE = app
 TRANSLATIONS = lang_zh.ts
-#QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
+QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
 
 SOURCES += main.cpp\
         printerdialog.cpp \   
