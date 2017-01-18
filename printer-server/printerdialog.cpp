@@ -10,10 +10,13 @@
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #pragma comment(lib, "IPHLPAPI.lib")
 
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
+
+using namespace std;
 
 PrinterDialog::PrinterDialog(QWidget *parent) :
     QDialog(parent),
@@ -121,9 +124,8 @@ void PrinterDialog::getIP()
                 printf("Unknown type %ld\n", pAdapter->Type);
                 break;
             }
-            printf("\tIP Address: \t%s\n",
-                   pAdapter->IpAddressList.IpAddress.String);
-            if(pAdapter->IpAddressList.IpAddress.String != "0.0.0.0")
+            string ipstr0;
+            if(pAdapter->IpAddressList.IpAddress.String != ipstr0)
             {
                 ui->ipleEdit->append(pAdapter->IpAddressList.IpAddress.String);
             }
