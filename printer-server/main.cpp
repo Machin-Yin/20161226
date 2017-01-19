@@ -2,33 +2,34 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QSharedMemory>
+#include <QObject>
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+    QTranslator *translator = new QTranslator;
+    translator->load(":/lang_zh.qm");
+    a.installTranslator(translator);
     QSharedMemory shared_memory;
     shared_memory.setKey("emindsoft.com.cn");
     if(shared_memory.attach())
     {
-        QMessageBox::information(0,"Information","This program is running already.",QMessageBox::Yes);
+        QMessageBox::information(0,QObject::tr("Information"),QObject::tr("This program is running already!"),QMessageBox::Yes);
         return 0;
     }
     if(shared_memory.create(1))
     {
-        QTranslator *translator = new QTranslator;
-        translator->load(":/lang_zh.qm");
-        a.installTranslator(translator);
+
         PrinterDialog w;
-         //w.setFixedSize(800,800);
         if ( argc>1 && (argv[1]==(char *)"//min" ))
         {
-            w.hide();
+            w.showNormal();
         }
         else
         {
 
-            w.showNormal();
+            w.hide();
         }
     //	w.show();
         return a.exec();

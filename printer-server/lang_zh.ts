@@ -24,19 +24,32 @@
         <translation type="unfinished">服务器地址：</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="230"/>
+        <location filename="printerdialog.cpp" line="232"/>
         <source>&amp;Restore</source>
         <translation type="unfinished">恢复</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="233"/>
+        <location filename="printerdialog.cpp" line="235"/>
         <source>&amp;Quit</source>
         <translation type="unfinished">退出</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="247"/>
+        <location filename="printerdialog.cpp" line="249"/>
         <source>EmindCloudPrinter</source>
         <translation type="unfinished">一铭云打印</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="18"/>
+        <source>Information</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="18"/>
+        <source>This program is running already!</source>
+        <translation type="unfinished">程序正在运行！</translation>
     </message>
 </context>
 </TS>
