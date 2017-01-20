@@ -24,12 +24,12 @@ int main(int argc, char *argv[])
         PrinterDialog w;
         if ( argc>1 && (argv[1]==(char *)"//min" ))
         {
-            w.showNormal();
+            w.hide();
         }
         else
         {
 
-            w.hide();
+            w.showNormal();
         }
     //	w.show();
         return a.exec();
