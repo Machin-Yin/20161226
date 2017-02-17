@@ -25,6 +25,7 @@ public:
 	void terminatePrg();
 	void remTerm(QString fileName3);
 	int cliPnum;
+    short copyCount;
 signals:
 	void error(QTcpSocket::SocketError socketError);
 
@@ -40,7 +41,7 @@ private:
 	QByteArray inBlock;
 	quint16 blockSize;
 	QString message;
-	//QMutex mutex;
+    QMutex mutex;
 
 };
 

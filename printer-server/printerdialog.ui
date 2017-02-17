@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>367</width>
-    <height>212</height>
+    <width>406</width>
+    <height>164</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>367</width>
-    <height>212</height>
+    <width>406</width>
+    <height>164</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>367</width>
-    <height>212</height>
+    <width>406</width>
+    <height>164</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -34,30 +34,43 @@
   <property name="styleSheet">
    <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
-  <widget class="QPushButton" name="flushButton">
+  <widget class="QWidget" name="layoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>170</y>
-     <width>47</width>
-     <height>25</height>
+     <x>120</x>
+     <y>70</y>
+     <width>274</width>
+     <height>22</height>
     </rect>
    </property>
-   <property name="focusPolicy">
-    <enum>Qt::StrongFocus</enum>
-   </property>
-   <property name="text">
-    <string>Update</string>
-   </property>
-   <property name="autoDefault">
-    <bool>false</bool>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <widget class="QLineEdit" name="ipEdit5">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ipEdit6">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QLabel" name="authLabel">
    <property name="geometry">
     <rect>
-     <x>9</x>
-     <y>150</y>
+     <x>10</x>
+     <y>92</y>
      <width>111</width>
      <height>22</height>
     </rect>
@@ -72,11 +85,53 @@
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
   </widget>
+  <widget class="QLineEdit" name="authleEdit">
+   <property name="geometry">
+    <rect>
+     <x>121</x>
+     <y>92</y>
+     <width>201</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>50</y>
+     <width>274</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLineEdit" name="ipEdit3">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ipEdit4">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QLabel" name="iplabel">
    <property name="geometry">
     <rect>
      <x>9</x>
-     <y>40</y>
+     <y>30</y>
      <width>111</width>
      <height>22</height>
     </rect>
@@ -94,40 +149,89 @@
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QLineEdit" name="authleEdit">
+  <widget class="QWidget" name="layoutWidget_3">
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>150</y>
-     <width>155</width>
+     <y>30</y>
+     <width>274</width>
      <height>22</height>
     </rect>
    </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLineEdit" name="ipEdit1">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ipEdit2">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="QTextEdit" name="ipleEdit">
+  <widget class="QPushButton" name="flushButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>120</y>
+     <width>47</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <property name="text">
+    <string>Update</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_4">
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>40</y>
-     <width>231</width>
-     <height>91</height>
+     <y>10</y>
+     <width>274</width>
+     <height>22</height>
     </rect>
    </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::NoFrame</enum>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <widget class="QLineEdit" name="ipEdit7">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="ipEdit8">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <zorder>iplabel</zorder>
-  <zorder>flushButton</zorder>
-  <zorder>authLabel</zorder>
-  <zorder>authleEdit</zorder>
-  <zorder>ipleEdit</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

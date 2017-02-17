@@ -1,0 +1,15 @@
+/*Qmenu Style Sheets*/
+ QMenu {
+     background-color: white;
+     border: 1px solid white;
+ }
+
+ QMenu::item {
+     background-color: transparent;
+     padding:4px 16px;
+     margin:0px 4px;
+ }
+
+ QMenu::item:selected {
+     background-color: #2dabf9;
+ }

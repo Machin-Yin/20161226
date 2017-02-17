@@ -24,17 +24,17 @@
         <translation type="unfinished">服务器地址：</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="232"/>
+        <location filename="printerdialog.cpp" line="262"/>
         <source>&amp;Restore</source>
         <translation type="unfinished">恢复</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="235"/>
+        <location filename="printerdialog.cpp" line="265"/>
         <source>&amp;Quit</source>
         <translation type="unfinished">退出</translation>
     </message>
     <message>
-        <location filename="printerdialog.cpp" line="249"/>
+        <location filename="printerdialog.cpp" line="279"/>
         <source>EmindCloudPrinter</source>
         <translation type="unfinished">一铭云打印</translation>
     </message>
@@ -43,6 +43,7 @@
     <name>QObject</name>
     <message>
         <location filename="main.cpp" line="18"/>
+        <location filename="printerdialog.cpp" line="149"/>
         <source>Information</source>
         <translation type="unfinished">警告</translation>
     </message>
@@ -50,6 +51,11 @@
         <location filename="main.cpp" line="18"/>
         <source>This program is running already!</source>
         <translation type="unfinished">程序正在运行！</translation>
+    </message>
+    <message>
+        <location filename="printerdialog.cpp" line="149"/>
+        <source>The authcode can&apos;t null!</source>
+        <translation type="unfinished">验证码不能为空！</translation>
     </message>
 </context>
 </TS>

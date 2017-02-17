@@ -8,6 +8,14 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+    QFile styleSheet(":/mystyle.qss");
+    if (!styleSheet.open(QIODevice::ReadOnly))
+    {
+        qWarning("Can't open the style sheet file.");
+        return 0;
+    }
+    a.setStyleSheet(styleSheet.readAll());
+
     QTranslator *translator = new QTranslator;
     translator->load(":/lang_zh.qm");
     a.installTranslator(translator);
