@@ -15,6 +15,7 @@ PrinterThread::PrinterThread(int socketDescriptor, QObject *parent)
 	blockSize = 0;
     cliPnum = 0;
     copyCount = 1;
+    prn_name = "";
 }
 
 
@@ -36,7 +37,7 @@ void PrinterThread::run()
             QString bl = recMessage();
             if (bl == "Request printer list!")
             {
-//                sendMessage("Printlist\r\n");
+                //                sendMessage("Printlist\r\n");
                 qDebug() << "request printer list";
                 QPrinterInfo pInfo;
                 QStringList pname;
@@ -63,8 +64,11 @@ void PrinterThread::run()
             else if(bl == "DefaultPrinter"){
                 while (tcpSocket->waitForReadyRead())
                 {
-                    QString index = recMessage();
-                    cliPnum = index.toInt();
+                    QString prn_name = recMessage();
+                    if(prn_name.size() > 2)
+                    {
+                        cliPnum = prn_name.toInt();
+                    }
                     qDebug() << "cliPnum==" << cliPnum << endl;
                     break;
                 }
@@ -86,17 +90,15 @@ void PrinterThread::run()
                 {
                     QString au = recMessage();
                     qDebug() << "authcode"<<bl;
-                    QFile authfile("authcode.txt");
-                    if (authfile.open(QIODevice::ReadOnly))
+
+                    QSettings setting("authcode.ini",QSettings::IniFormat);//¶ÁÅäÖÃÎÄ¼þ
+                    setting.beginGroup("authcode");
+                    QString authcode=setting.value("authcode").toString();
+                    setting.endGroup();
+                    if (au != authcode)
                     {
-                        QString authcode = "";
-                        authcode = QString(authfile.read(100));
-                        authfile.close();
-                        if (au != authcode)
-                        {
-                            sendMessage("AUTH WRONG");
-                            break;
-                        }
+                        sendMessage("AUTH WRONG");
+                        break;
                     }
                     sendMessage("OK");
                     break;
@@ -226,7 +228,10 @@ bool PrinterThread::recFile()
             localFile->close();
             delete localFile;
             //setDefPrinter(PRINTER_NUM, fileName);
-            setDefPrinter(cliPnum, fileName);
+            if(prn_name!="")
+                setDefPrinter(prn_name, fileName);
+            else
+                setDefPrinter(cliPnum, fileName);
             mutex.unlock();
             return true;
         }
@@ -242,6 +247,98 @@ bool PrinterThread::recFile()
 //	qDebug() << tcpSocket->errorString();
 //	tcpSocket->close();
 //}
+
+void PrinterThread::setDefPrinter(QString printer_name,QString fileName1)
+{
+    qDebug() << __FUNCTION__ << endl;
+
+
+
+    //QString printerName = printer.printerName;
+    //BOOL setret = FALSE;
+    LPCWSTR printerName = (const wchar_t*)printer_name.utf16();
+    SetDefaultPrinter(printerName);
+    //SetPrinter((const wchar_t*)printer_name.utf16(),);
+
+    /****** Set printer property! ******/
+
+    //LONG lSize = 0;
+    LPDEVMODE lpDevMode = NULL;
+    HANDLE hPrinter;
+    DWORD dwNeeded, dwRet;
+
+    TCHAR defPrinter[256] = { 0 };
+    memset(defPrinter, 0, 256);
+    DWORD lengthDefpr = 256;
+    GetDefaultPrinter(defPrinter, &lengthDefpr);
+    qDebug() << "defPrinter===" << defPrinter << endl;
+    //	LPDEVMODE defdevmode = getDefaultPdevmode(hPrinter);
+    qDebug() << "defPrinter===" << defPrinter << endl;
+    if (!OpenPrinter(defPrinter, &hPrinter, NULL))
+    {
+        qDebug() << "OpenPrinter==" << !OpenPrinter(defPrinter, &hPrinter, NULL) << endl;
+        return;
+    }
+
+    //get real size of DEVMODE
+    dwNeeded = DocumentProperties(NULL, hPrinter, defPrinter, NULL, NULL, 0);
+    lpDevMode = (LPDEVMODE)malloc(dwNeeded);
+    dwRet = DocumentProperties(NULL, hPrinter, defPrinter, lpDevMode, NULL, DM_OUT_BUFFER);
+    qDebug() << "dwRet==" << dwRet << endl;
+    if (dwRet != IDOK)
+    {
+        free(lpDevMode);
+        ClosePrinter(hPrinter);
+        return;
+    }
+    if (lpDevMode->dmFields & DM_COPIES)
+    {
+        lpDevMode->dmCopies = copyCount;
+        lpDevMode->dmFields |= DM_COPIES;
+    }
+    if (lpDevMode->dmFields & DM_ORIENTATION)
+    {
+        /* If the printer supports paper orientation, set it.*/
+        lpDevMode->dmOrientation = DMORIENT_LANDSCAPE;  //landscape:ºá    portrait:×Ý
+        lpDevMode->dmOrientation |= DM_ORIENTATION;
+    }
+//	if (lpDevMode->dmFields & DM_PAPERSIZE)
+//	{
+//		lpDevMode->dmPaperSize = DMPAPER_SIZE;
+//		lpDevMode->dmOrientation |= DM_PAPERSIZE;
+//	}
+    dwRet = DocumentProperties(NULL, hPrinter, defPrinter, lpDevMode, lpDevMode, DM_IN_BUFFER | DM_OUT_BUFFER);
+    //ClosePrinter(hPrinter);
+    if (dwRet != IDOK)
+    {
+        free(lpDevMode);
+        return;
+    }
+
+    //HDC hdc = CreateDC( (LPCWSTR)(_T("winspool").AllocSysString(), printerName , NULL, lpDevMode);
+    DWORD dw;
+    PRINTER_INFO_2 *pi2;
+    GetPrinter(hPrinter, 2, NULL, 0, &dw);
+    pi2 = (PRINTER_INFO_2*)GlobalAllocPtr(GHND, dw);
+    GetPrinter(hPrinter, 2, (LPBYTE)pi2, dw, &dw);
+
+    qDebug() << "pi2->pDevMode before" << pi2->pDevMode << endl;
+    qDebug() << "lpDevMode before" << lpDevMode << endl;
+
+    pi2->pDevMode = lpDevMode;
+    SetPrinter(hPrinter, 2, (LPBYTE)pi2, 0);
+
+    QString filePath = fileName1;
+    doPrint(filePath);
+
+    ClosePrinter(hPrinter);
+    GlobalFreePtr(pi2);
+
+    //_sleep(10 * 1000);
+//	SetDefaultPrinter(szBufferDefaultPrinterName);
+    //	setDefaultPdevmode(hPrinter, defdevmode);   ////
+
+}
 
 
 void PrinterThread::setDefPrinter(int num,QString fileName1)

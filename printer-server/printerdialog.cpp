@@ -5,6 +5,7 @@
 #include <QNetworkInterface>
 #include <qfile.h>
 #include <QSettings>
+#include <QDir>
 
 #include <winsock2.h>
 #include <iphlpapi.h>
@@ -32,15 +33,12 @@ PrinterDialog::PrinterDialog(QWidget *parent) :
 
     setAutoStart(true);
 
-    QFile authfile("authcode.txt");
-    if (authfile.open(QIODevice::ReadOnly))
-    {
-        QString authcode = "";
-        authcode = QString(authfile.read(100));
-        authfile.close();
-        qDebug() << "authcode" << authcode << endl;
-        ui->authleEdit->setText(authcode);
-    }
+    QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
+    setting.beginGroup("authcode");
+    QString authcode=setting.value("authcode").toString();
+    setting.endGroup();
+    ui->authleEdit->setText(authcode);
+
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(regetIP()));
     timer->start(200);
@@ -70,7 +68,6 @@ PrinterDialog::~PrinterDialog()
 
 void PrinterDialog::regetIP()
 {
-//    ui->ipleEdit->setText("");
     QLineEdit *lineEdit[8]={ui->ipEdit1,ui->ipEdit2,ui->ipEdit3,ui->ipEdit4,ui->ipEdit5,ui->ipEdit6,ui->ipEdit7,ui->ipEdit8};
     for(int j=0;j<8;j++)
     {
@@ -112,7 +109,7 @@ void PrinterDialog::getIP()
                 printf("Other\n");
                 break;
             case MIB_IF_TYPE_ETHERNET:
-//                printf("Ethernet\n");
+                //                printf("Ethernet\n");
                 break;
             case MIB_IF_TYPE_TOKENRING:
                 printf("Token Ring\n");
@@ -130,7 +127,7 @@ void PrinterDialog::getIP()
                 printf("Slip\n");
                 break;
             default:
-//                printf("Unknown type %ld\n", pAdapter->Type);
+                //                printf("Unknown type %ld\n", pAdapter->Type);
                 break;
             }
             string ipstr0 = "0.0.0.0";
@@ -156,6 +153,7 @@ void PrinterDialog::getIP()
         FREE(pAdapterInfo);
 }
 
+
 void PrinterDialog::on_flushButton_clicked()
 {    
     QString authcode = ui->authleEdit->text();
@@ -165,58 +163,38 @@ void PrinterDialog::on_flushButton_clicked()
         QFile authfile("authcode.txt");
         if (authfile.open(QIODevice::ReadOnly))
         {
-            QString oldcode = "";
-            oldcode = QString(authfile.read(100));
-            authfile.close();
+            QSettings setting("%APPDATA%\authcode.ini",QSettings::IniFormat);//读配置文件
+            setting.beginGroup("authcode");
+            QString oldcode=setting.value("authcode").toString();
             ui->authleEdit->setText(oldcode);
         }
     }
     else
     {
-        QFile file("authcode.txt");
-        if (file.open(QIODevice::WriteOnly))
-        {
-            file.write(authcode.toStdString().c_str());
-            file.close();
-        }
+        QSettings setting("./authcode.ini",QSettings::IniFormat);
+        setting.beginGroup("authcode");
+        setting.setValue("authcode",authcode);
+        setting.endGroup();
     }
 }
 
-//void PrinterDialog::setAutoStart(bool is_auto_start)
-//{
-//    QString application_name = QApplication::applicationName();
-//    QSettings *settings = new QSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-//    if(is_auto_start)
-//    {
-//        QString application_path = QApplication::applicationFilePath();
-//        settings->setValue(application_name, application_path.replace('/', '\\'));
-//    }
-//    else
-//    {
-//        settings->remove(application_name);
-//    }
-//    delete settings;
-//}
-
-#include <QDir>
-
-void PrinterDialog::setAutoStart(bool bAutoRun)
+void PrinterDialog::setAutoStart(bool is_auto_start)
 {
-    //HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-    QSettings  reg("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
-
-    if (bAutoRun)
+    QString application_name = QApplication::applicationName();
+    QSettings *settings = new QSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    if(is_auto_start)
     {
-         QString strAppPath=QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-        //strAppPath.replace(QChar('/'),QChar('\\'),Qt::CaseInsensitive);
-        reg.setValue("wirtepad",strAppPath);
+        QString application_path = QApplication::applicationFilePath();
+        settings->setValue(application_name, application_path.replace('/', '\\'));
     }
     else
     {
-        reg.setValue("wirtepad","");
+        settings->remove(application_name);
     }
-
+    delete settings;
 }
+
+
 
 void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
 {
@@ -228,14 +206,13 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
         if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
-            QFile authfile("authcode.txt");
-            if (authfile.open(QIODevice::ReadOnly))
-            {
-                QString authcode = "";
-                authcode = QString(authfile.read(100));
-                authfile.close();
-                ui->authleEdit->setText(authcode);
-            }
+
+            QSettings setting("authcode.ini",QSettings::IniFormat);
+            setting.beginGroup("authcode");
+            QString authcode=setting.value("authcode").toString();
+            setting.endGroup();
+            ui->authleEdit->setText(authcode);
+
             break;
         }
         else if(this->isVisible())
@@ -249,14 +226,13 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
         if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
-            QFile authfile("authcode.txt");
-            if (authfile.open(QIODevice::ReadOnly))
-            {
-                QString authcode = "";
-                authcode = QString(authfile.read(100));
-                authfile.close();
-                ui->authleEdit->setText(authcode);
-            }
+
+            QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
+            setting.beginGroup("authcode");
+            QString authcode=setting.value("authcode").toString();
+            setting.endGroup();
+            ui->authleEdit->setText(authcode);
+
             break;
         }
         else if(this->isVisible())
@@ -275,11 +251,6 @@ void PrinterDialog::closeEvent(QCloseEvent *event)
 {
 
     if (trayIcon->isVisible()) {
-//        QMessageBox::information(this, tr("Systray"),
-//                                 tr("The program will keep running in the "
-//                                    "system tray. To terminate the program, "
-//                                    "choose <b>Quit</b> in the context menu "
-//                                    "of the system tray entry."));
         hide();
         event->ignore();
     }

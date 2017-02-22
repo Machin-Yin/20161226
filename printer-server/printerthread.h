@@ -21,10 +21,13 @@ public:
 	QString recMessage();
 	bool recFile();
 	void setDefPrinter(int num, QString fileName1);
+    void setDefPrinter(QString printer_name, QString fileName1);
+
     void doPrint(QString fileName2);
 	void terminatePrg();
 	void remTerm(QString fileName3);
 	int cliPnum;
+    QString prn_name;
     short copyCount;
 signals:
 	void error(QTcpSocket::SocketError socketError);
