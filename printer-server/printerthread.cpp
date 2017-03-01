@@ -35,6 +35,7 @@ void PrinterThread::run()
         while (tcpSocket->waitForReadyRead())
         {
             QString bl = recMessage();
+            qDebug() << "bl==="<<bl;
             if (bl == "Request printer list!")
             {
                 //                sendMessage("Printlist\r\n");
@@ -64,12 +65,17 @@ void PrinterThread::run()
             else if(bl == "DefaultPrinter"){
                 while (tcpSocket->waitForReadyRead())
                 {
-                    QString prn_name = recMessage();
-                    if(prn_name.size() > 2)
+                    QString prn_nameornum = recMessage();
+                    if(prn_nameornum.size() > 2)
                     {
-                        cliPnum = prn_name.toInt();
+                        prn_name = prn_nameornum;
+                        qDebug() << "prn_name==" << prn_name << endl;
                     }
-                    qDebug() << "cliPnum==" << cliPnum << endl;
+                    else
+                    {
+                        cliPnum = prn_nameornum.toInt();
+                        qDebug() << "cliPnum==" << cliPnum << endl;
+                    }
                     break;
                 }
 
@@ -85,11 +91,13 @@ void PrinterThread::run()
             }
 
             else if(bl == "License")
+
             {
+                qDebug() << "License"<<bl;
                 while(tcpSocket->waitForReadyRead())
                 {
                     QString au = recMessage();
-                    qDebug() << "authcode"<<bl;
+                    qDebug() << "authcode"<<au;
 
                     QSettings setting("authcode.ini",QSettings::IniFormat);//¶ÁÅäÖÃÎÄ¼þ
                     setting.beginGroup("authcode");
@@ -100,8 +108,11 @@ void PrinterThread::run()
                         sendMessage("AUTH WRONG");
                         break;
                     }
-                    sendMessage("OK");
-                    break;
+                    else
+                    {
+                        sendMessage("OK");
+                        break;
+                    }
                 }
             }
             else
@@ -112,13 +123,14 @@ void PrinterThread::run()
         }
         //mutex.unlock();
     }
+    //    exec();
 }
 
 
 
 void PrinterThread::sendMessage(QString messtr)
 {
-	qDebug() << __FUNCTION__ << endl;
+    qDebug() << "sendMessage()==" << messtr << endl;
 	QByteArray authblock;
 	QDataStream out(&authblock, QIODevice::WriteOnly);
 	out << (quint16)0 <<messtr;
@@ -159,6 +171,7 @@ bool PrinterThread::recFile()
 {
     qDebug() << __FUNCTION__ << endl;
     mutex.lock();
+    tempFolder = QDir::tempPath();
     QDataStream in(tcpSocket);
     qDebug() <<"tcpSocket->bytesAvailable()"<< tcpSocket->bytesAvailable() << endl;
     while (tcpSocket->bytesAvailable() > 0)
@@ -190,7 +203,8 @@ bool PrinterThread::recFile()
                 bytesReceived += fileNameSize;
                 qDebug() << "(tcpSocket->bytesAvailable()=" << tcpSocket->bytesAvailable() << endl;
                 qDebug() << "bytesReceived=" << bytesReceived << endl;
-                localFile = new QFile(fileName);
+                tempFile = tempFolder + "/" + fileName;
+                localFile = new QFile(tempFile);
                 if (!localFile->open(QFile::ReadWrite))
                 {
                     qDebug() << "open file error!";
@@ -229,9 +243,9 @@ bool PrinterThread::recFile()
             delete localFile;
             //setDefPrinter(PRINTER_NUM, fileName);
             if(prn_name!="")
-                setDefPrinter(prn_name, fileName);
+                setDefPrinter(prn_name, tempFile);
             else
-                setDefPrinter(cliPnum, fileName);
+                setDefPrinter(cliPnum, tempFile);
             mutex.unlock();
             return true;
         }
@@ -330,6 +344,7 @@ void PrinterThread::setDefPrinter(QString printer_name,QString fileName1)
 
     QString filePath = fileName1;
     doPrint(filePath);
+    prn_name = "";
 
     ClosePrinter(hPrinter);
     GlobalFreePtr(pi2);
@@ -476,7 +491,7 @@ void PrinterThread::doPrint(QString fileName2)
 
 
 	qDebug() << "ret====" << ret << endl;
-    _sleep(3 * 1000);
+    _sleep(10 * 1000);
 
 	remTerm(fileName2);
 	qDebug() << "delete" << fileName2 << "success!" << endl;
@@ -495,6 +510,7 @@ void PrinterThread::remTerm(QString fileName3)
             qDebug() << "delete" << fileName3 << "success!" << endl;
             break;
         }
+        qDebug() << "delete" << fileName3 << "failure!" << endl;
 
     }
 }

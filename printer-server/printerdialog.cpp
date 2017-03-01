@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <Windows.h>
 #pragma comment(lib, "IPHLPAPI.lib")
 
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
@@ -32,12 +33,7 @@ PrinterDialog::PrinterDialog(QWidget *parent) :
     setWindowFlags(flags);
 
     setAutoStart(true);
-
-    QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
-    setting.beginGroup("authcode");
-    QString authcode=setting.value("authcode").toString();
-    setting.endGroup();
-    ui->authleEdit->setText(authcode);
+    resetAuth();
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(regetIP()));
@@ -159,22 +155,12 @@ void PrinterDialog::on_flushButton_clicked()
     QString authcode = ui->authleEdit->text();
     if(authcode == "")
     {
-        QMessageBox::information(0,QObject::tr("Information"),QObject::tr("The authcode can't null!"),QMessageBox::Yes);
-        QFile authfile("authcode.txt");
-        if (authfile.open(QIODevice::ReadOnly))
-        {
-            QSettings setting("%APPDATA%\authcode.ini",QSettings::IniFormat);//读配置文件
-            setting.beginGroup("authcode");
-            QString oldcode=setting.value("authcode").toString();
-            ui->authleEdit->setText(oldcode);
-        }
+        QMessageBox::information(0,QObject::tr("Information"),QObject::tr("The authcode can't null!"),QMessageBox::tr("Yes"));
+        resetAuth();
     }
     else
     {
-        QSettings setting("./authcode.ini",QSettings::IniFormat);
-        setting.beginGroup("authcode");
-        setting.setValue("authcode",authcode);
-        setting.endGroup();
+        saveAuth(authcode);
     }
 }
 
@@ -206,13 +192,7 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
         if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
-
-            QSettings setting("authcode.ini",QSettings::IniFormat);
-            setting.beginGroup("authcode");
-            QString authcode=setting.value("authcode").toString();
-            setting.endGroup();
-            ui->authleEdit->setText(authcode);
-
+            resetAuth();
             break;
         }
         else if(this->isVisible())
@@ -226,13 +206,7 @@ void PrinterDialog::iconIsActived(QSystemTrayIcon::ActivationReason reason)
         if(this->isMinimized()|| this->isHidden())
         {
             showNormal();
-
-            QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
-            setting.beginGroup("authcode");
-            QString authcode=setting.value("authcode").toString();
-            setting.endGroup();
-            ui->authleEdit->setText(authcode);
-
+            resetAuth();
             break;
         }
         else if(this->isVisible())
@@ -267,9 +241,36 @@ void PrinterDialog::createActions()
 {
     restoreAction = new QAction(tr("&Restore"), this);
     connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
+    connect(restoreAction, &QAction::triggered, this, &PrinterDialog::slotresetAuth);
 
     quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+}
+
+void PrinterDialog::slotresetAuth()
+{
+    QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
+    setting.beginGroup("authcode");
+    QString authcode=setting.value("authcode").toString();
+    setting.endGroup();
+    ui->authleEdit->setText(authcode);
+}
+
+void PrinterDialog::resetAuth()
+{
+    QSettings setting("authcode.ini",QSettings::IniFormat);//读配置文件
+    setting.beginGroup("authcode");
+    QString authcode=setting.value("authcode").toString();
+    setting.endGroup();
+    ui->authleEdit->setText(authcode);
+}
+
+void PrinterDialog::saveAuth(QString authCode)
+{
+    QSettings setting("authcode.ini",QSettings::IniFormat);
+    setting.beginGroup("authcode");
+    setting.setValue("authcode",authCode);
+    setting.endGroup();
 }
 
 void PrinterDialog::createTrayIcon()
@@ -281,10 +282,14 @@ void PrinterDialog::createTrayIcon()
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);
-    trayIcon ->setIcon(QIcon(":/image/tray.png"));
+    trayIcon->setIcon(QIcon(":/image/tray.png"));
     trayIcon->setToolTip(tr("EmindCloudPrinter"));
 
 }
 
 
-
+void PrinterDialog::showEvent(QShowEvent *event)
+{
+    resetAuth();
+    event->ignore();
+}

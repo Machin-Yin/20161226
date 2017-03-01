@@ -13,6 +13,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ECP
 TEMPLATE = app
 TRANSLATIONS = lang_zh.ts
+RC_FILE += myapp.rc
 #QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
 
 SOURCES += main.cpp\

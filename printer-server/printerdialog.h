@@ -30,6 +30,8 @@ private:
 	PrinterServer printerServer;
 	qint16 tcpPort;
     void getIP();
+    void resetAuth();
+    void saveAuth(QString authCode);
 
 /*************** systray *************/
     QAction *restoreAction;
@@ -41,10 +43,12 @@ private:
     void setVisible(bool visible);
     void setIcon();
     void closeEvent(QCloseEvent *event);
+    void showEvent(QShowEvent *);
 
 private slots:
     void regetIP();
 	void on_flushButton_clicked();
+    void slotresetAuth();
     void iconIsActived(QSystemTrayIcon::ActivationReason reason);
 };
 

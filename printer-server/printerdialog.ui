@@ -31,6 +31,10 @@
   <property name="windowTitle">
    <string>Emind Cloud Printer Setting</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/image/tray.png</normaloff>:/image/tray.png</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
@@ -234,6 +238,8 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

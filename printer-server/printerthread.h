@@ -40,6 +40,8 @@ private:
 	qint64 bytesReceived;
 	qint64 fileNameSize;
 	QString fileName;
+    QString tempFolder;
+    QString tempFile;
 	QFile *localFile;
 	QByteArray inBlock;
 	quint16 blockSize;

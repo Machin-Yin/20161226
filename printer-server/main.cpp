@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    //    qInstallMessageHandler(myMessageOutput);
+//    qInstallMessageHandler(myMessageOutput);
 
     QFile styleSheet(":/mystyle.qss");
     if (!styleSheet.open(QIODevice::ReadOnly))
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     shared_memory.setKey("emindsoft.com.cn");
     if(shared_memory.attach())
     {
-        QMessageBox::information(0,QObject::tr("Information"),QObject::tr("This program is running already!"),QMessageBox::Yes);
+        QMessageBox::information(0,QObject::tr("Information"),QObject::tr("This program is running already!"),QMessageBox::tr("Yes"));
         return 0;
     }
     if(shared_memory.create(1))
@@ -117,7 +117,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-
             w.showNormal();
         }
         //	w.show();
